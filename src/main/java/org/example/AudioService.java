@@ -14,10 +14,12 @@ import lombok.SneakyThrows;
 import org.example.model.*;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class AudioService {
 
-    private Token token;
+    private AtomicReference<Token> token;
+
     private ObjectMapper objectMapper;
     private HttpClient client;
 
@@ -57,7 +59,7 @@ public class AudioService {
         }
 
         String jsonString = response.body();
-        this.token = objectMapper.readValue(jsonString, Token.class);
+        this.token.set(objectMapper.readValue(jsonString, Token.class));
     }
 
     @SneakyThrows
@@ -78,8 +80,7 @@ public class AudioService {
         }
 
         String jsonString = response.body();
-
-        this.token = objectMapper.readValue(jsonString, Token.class);
+        this.token.set(objectMapper.readValue(jsonString, Token.class));
     }
 
     public AudioResponse postAudio(AudioRequest dto) throws IOException, InterruptedException, URISyntaxException {
@@ -91,7 +92,7 @@ public class AudioService {
                 .uri(new URI("http://localhost:8080/audio"))
                 .header("Accept", "*/*")
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + token.getAccessToken())
+                .header("Authorization", "Bearer " + token.get().getAccessToken())
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
 
@@ -130,7 +131,7 @@ public class AudioService {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI("http://localhost:8080/audio/" + audioId + "/upload-chunk?chunkIndex=" + chunkIndex))
                 .header("Accept", "*/*")
-                .header("Authorization", "Bearer " + token.getAccessToken())
+                .header("Authorization", "Bearer " + token.get().getAccessToken())
                 .header("Content-Type", "multipart/form-data; boundary=" + boundary)
                 .POST(bodyPublisher)
                 .build();
