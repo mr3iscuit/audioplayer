@@ -12,11 +12,14 @@ repositories {
 
 
 dependencies {
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.0.1'
     annotationProcessor 'org.projectlombok:lombok'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.0.1'
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.18.0-rc1'
+
+    implementation 'commons-configuration:commons-configuration:1.6'
     implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
-    testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation platform('org.junit:junit-bom:5.9.1')
 }
 
 test {

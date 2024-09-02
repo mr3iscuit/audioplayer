@@ -1,4 +1,4 @@
-package org.example;
+package org.example.model;
 
 import lombok.*;
 
@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class AudioPostDTO {
+public class AudioPostRequest {
     private String title;
     private String artist;
     private String album;
