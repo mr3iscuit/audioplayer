@@ -1,11 +1,11 @@
 package org.example;
 
-import org.example.model.AudioPostRequest;
-import org.example.model.AuthenticationRequest;
-import org.example.model.RegisterRequest;
+import org.example.model.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
 
 
@@ -19,7 +19,7 @@ public class Main {
         AudioService audioService = new AudioService(auth);
 
 //        RegisterRequest registerRequest = new RegisterRequest().builder()
-//                .email("eyvaz2.bayramov2018@gmail.com")
+//                .email("eyvaz.bayramov2018@gmail.com")
 //                .password("biscobisco")
 //                .role(Role.USER)
 //                .firstname("Eyvaz")
@@ -28,7 +28,7 @@ public class Main {
 //        AudioService audioService = new AudioService(registerRequest);
 
 
-        AudioPostRequest audio = AudioPostRequest.builder()
+        AudioRequest audio = AudioRequest.builder()
                 .album("some album")
                 .artist("some artist")
                 .title("some title")
@@ -37,6 +37,10 @@ public class Main {
                 .trackNumber("1")
                 .build();
 
-        audioService.postAudio(audio);
+        AudioResoponse audioResponse = audioService.postAudio(audio);
+        File file = new File("/home/biscuit/Documents/vzlom.txt");
+        byte[] chunk = Files.readAllBytes(file.toPath());
+
+        audioService.uploadChunk(0, audioResponse.getId(), chunk);
     }
 }

@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class AudioPostRequest {
+public class AudioRequest {
     private String title;
     private String artist;
     private String album;

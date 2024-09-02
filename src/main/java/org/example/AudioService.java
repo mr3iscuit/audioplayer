@@ -12,7 +12,6 @@ import lombok.SneakyThrows;
 import org.example.model.*;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 public class AudioService {
 
@@ -81,7 +80,7 @@ public class AudioService {
         this.token = objectMapper.readValue(jsonString, Token.class);
     }
 
-    public AudioGetRequest postAudio(AudioPostRequest dto) throws IOException, InterruptedException, URISyntaxException {
+    public AudioResoponse postAudio(AudioRequest dto) throws IOException, InterruptedException, URISyntaxException {
         HttpClient client = HttpClient.newHttpClient();
         ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(dto);
@@ -108,7 +107,7 @@ public class AudioService {
             throw new IOException("Empty response body");
         }
 
-        return objectMapper.readValue(jsonString, AudioGetRequest.class);
+        return objectMapper.readValue(jsonString, AudioResoponse.class);
     }
 
 
@@ -129,15 +128,15 @@ public class AudioService {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI("http://localhost:8080/audio/" + audioId + "/upload-chunk?chunkIndex=" + chunkIndex))
                 .header("Accept", "*/*")
-                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
                 .header("Authorization", "Bearer " + token.getAccessToken())
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
                 .POST(bodyPublisher)
                 .build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() == 403) {
-            throw new RuntimeException("Access denied: HTTP code 403. Check token permissions.");
+            throw new RuntimeException("Access denied: HTTP code 403. Check token permissions." + response.body());
         } else if (response.statusCode() < 200 || response.statusCode() >= 300) {
             throw new RuntimeException("Failed to upload file: HTTP code " + response.statusCode());
         }
