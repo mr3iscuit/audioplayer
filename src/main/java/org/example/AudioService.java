@@ -12,6 +12,7 @@ import lombok.SneakyThrows;
 import org.example.model.*;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 public class AudioService {
 
@@ -110,4 +111,35 @@ public class AudioService {
         return objectMapper.readValue(jsonString, AudioGetRequest.class);
     }
 
+
+    @SneakyThrows
+    public void uploadChunk(int chunkIndex, Long audioId, byte[] chunk) {
+        HttpClient client = HttpClient.newHttpClient();
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        String boundary = "----Boundary" + System.currentTimeMillis();
+        HttpRequest.BodyPublisher bodyPublisher = HttpRequest.BodyPublishers.ofString(
+                "--" + boundary + "\r\n" +
+                        "Content-Disposition: form-data; name=\"file\"; filename=\"" + "chunkIndex" + chunkIndex + "audioId" + audioId + "\"\r\n" +
+                        "Content-Type: application/octet-stream\r\n\r\n" +
+                        new String(chunk) + "\r\n" +
+                        "--" + boundary + "--\r\n"
+        );
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/audio/" + audioId + "/upload-chunk?chunkIndex=" + chunkIndex))
+                .header("Accept", "*/*")
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                .header("Authorization", "Bearer " + token.getAccessToken())
+                .POST(bodyPublisher)
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 403) {
+            throw new RuntimeException("Access denied: HTTP code 403. Check token permissions.");
+        } else if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new RuntimeException("Failed to upload file: HTTP code " + response.statusCode());
+        }
+    }
 }
