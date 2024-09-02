@@ -1,5 +1,7 @@
 package org.example;
 
+import java.io.FileInputStream;
+import java.io.RandomAccessFile;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -80,7 +82,7 @@ public class AudioService {
         this.token = objectMapper.readValue(jsonString, Token.class);
     }
 
-    public AudioResoponse postAudio(AudioRequest dto) throws IOException, InterruptedException, URISyntaxException {
+    public AudioResponse postAudio(AudioRequest dto) throws IOException, InterruptedException, URISyntaxException {
         HttpClient client = HttpClient.newHttpClient();
         ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(dto);
@@ -95,7 +97,6 @@ public class AudioService {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-
         if (response.statusCode() == 403) {
             throw new RuntimeException("Access denied: HTTP code 403. Check token permissions.");
         } else if (response.statusCode() < 200 || response.statusCode() >= 300) {
@@ -107,7 +108,8 @@ public class AudioService {
             throw new IOException("Empty response body");
         }
 
-        return objectMapper.readValue(jsonString, AudioResoponse.class);
+        System.out.println(jsonString);
+        return objectMapper.readValue(jsonString, AudioResponse.class);
     }
 
 
@@ -139,6 +141,20 @@ public class AudioService {
             throw new RuntimeException("Access denied: HTTP code 403. Check token permissions." + response.body());
         } else if (response.statusCode() < 200 || response.statusCode() >= 300) {
             throw new RuntimeException("Failed to upload file: HTTP code " + response.statusCode());
+        }
+    }
+
+    public void uploadAudioFile(AudioResponse audioResponse, String sourceFilePath) throws IOException {
+
+        try (FileInputStream fis = new FileInputStream(sourceFilePath)) {
+            byte[] buffer = new byte[524288];
+            int bytesRead;
+            int chunkIndex = 0;
+
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                uploadChunk(chunkIndex, audioResponse.getId(), buffer);
+                chunkIndex++;
+            }
         }
     }
 }

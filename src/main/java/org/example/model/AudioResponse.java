@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
-public class AudioResoponse {
+public class AudioResponse {
     private Long id;
     private String title;
     private String artist;
@@ -21,7 +21,8 @@ public class AudioResoponse {
     private String releaseYear;
     private String genre;
     private String trackNumber;
-    private File file;
+
+    private FileResponse file;
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)

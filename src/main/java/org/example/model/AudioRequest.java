@@ -14,4 +14,5 @@ public class AudioRequest {
     private String genre;
     private String releaseYear;
     private String trackNumber;
+    FileRequest file;
 }
