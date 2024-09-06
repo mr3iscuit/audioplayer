@@ -17,5 +17,6 @@ public class FileResponse {
     private String fileType;
     private Integer sampleRate;
     private Integer chunkNumber;
+    private Integer partialChunkSize;
     private List<Long> chunksID;
 }

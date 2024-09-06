@@ -1,40 +1,42 @@
 package org.example;
 
-import java.io.ByteArrayOutputStream;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import lombok.Getter;
 
-public class SharedBuffer {
-    private final BlockingQueue<byte[]> bufferQueue = new LinkedBlockingQueue<>();
-    private final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+import java.nio.ByteBuffer;
 
-    // Add chunk to buffer
-    public synchronized void addChunk(byte[] chunk) {
-        try {
-            bufferQueue.put(chunk);  // Add to the queue
-            byteStream.write(chunk); // Optionally keep track of all chunks
-        } catch (Exception e) {
-            e.printStackTrace();
+public class AudioBuffer {
+    private final ByteBuffer buffer;
+
+    @Getter
+    private final int chunkSize;
+
+    @Getter
+    private int bufferSize;
+
+    @Getter
+    private boolean[] progress;
+
+    AudioBuffer(int chunkNumber, int chunkSize) {
+        this.progress = new boolean[chunkNumber];
+        this.bufferSize = chunkNumber * chunkSize;
+        this.buffer = ByteBuffer.allocate(bufferSize);
+        this.chunkSize = chunkSize;
+    }
+
+    public synchronized void setChunk(Integer chunkIndex, byte[] chunk) {
+        progress[chunkIndex] = true;
+        for (boolean b : progress) {
+            System.out.printf(" " + (b ? 1 : 0));
         }
+        System.out.println();
+
+        buffer.put(chunkSize * chunkIndex, chunk);
     }
 
-    // Get the next chunk for playing
-    public byte[] getChunk() {
-        try {
-            return bufferQueue.take(); // Take from the queue
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return null;
+    public synchronized ByteBuffer getSlice(int index, int bufferSize) {
+        if (!progress[index / chunkSize]) {
+            throw new ResourceIsNotReady("Chunk is not loaded");
         }
-    }
-
-    // Get the total downloaded data
-    public synchronized byte[] getDownloadedData() {
-        return byteStream.toByteArray();
-    }
-
-    // Check download progress
-    public synchronized int getDownloadedSize() {
-        return byteStream.size();
+        return buffer.slice(index, bufferSize);
     }
 }
